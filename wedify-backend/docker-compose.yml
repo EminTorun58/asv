@@ -1,0 +1,84 @@
+version: '3.3'
+
+services:
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'db'
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: 'root'
+      # You can use whatever password you like
+      MYSQL_PASSWORD: 'root'
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: 'root'
+    ports:
+      # <Port exposed> : < MySQL Port running inside container>
+      - '3306:3306'
+    expose:
+      # Opens port 3306 on the container
+      - '3306'
+      # Where our data will be persisted
+    volumes:
+      - wedify_db:/var/lib/mysql
+
+  jenkins:
+    container_name: jenkins
+    restart: always
+    build: pipeline/jenkins
+    #image: jenkins/jenkins:lts
+    ports:
+      - "8103:8080"
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock # Use Docker from the host instead of running Docker in Docker
+
+  sonarqube:
+    container_name: sonarqube
+    restart: always
+    image: sonarqube:7.7-community
+    ports:
+      - "8104:9000"
+    volumes:
+      - sonarqube-conf:/opt/sonarqube/conf
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-extensions:/opt/sonarqube/extensions
+      - sonarqube-bundled-plugins:/opt/sonarqube/lib/bundled-plugins
+
+  dockerregistry:
+    container_name: dockerregistry
+    restart: always
+    image: registry:2.5.2
+    ports:
+      - "8107:5000"
+    volumes:
+      - dockerregistry-data:/var/lib/registry
+      - dockerregistry-certs:/certs
+      - dockerregistry-auth:/auth
+
+volumes:
+  gogs-data:
+  #    name: gogs-data
+  dockerregistry-data:
+  #    name: dockerregistry-data
+  dockerregistry-certs:
+  #    name: dockerregistry-certs
+  dockerregistry-auth:
+  #    name: dockerregistry-auth
+  sonarqube-conf:
+  #    name: sonarqube-conf
+  sonarqube-data:
+  #    name: sonarqube-data
+  sonarqube-extensions:
+  #    name: sonarqube-extensions
+  sonarqube-bundled-plugins:
+  #    name: sonarqube-bundled-plugins
+  jenkins-data:
+  #    name: jenkins-data
+  gitlab-data-etc:
+  #    name: gitlab-data-etc
+  gitlab-data-log:
+  #    name: gitlab-data-log
+  gitlab-data-opt:
+  #    name: gitlab-data-opt
+  wedify_db:
